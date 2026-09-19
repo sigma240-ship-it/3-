@@ -28,7 +28,7 @@
   .topbar .wrap { display: flex; align-items: center; justify-content: space-between; }
   .brand { font-weight: 800; letter-spacing: -0.02em; }
   a { color: var(--accent); font-weight: 700; text-decoration: none; }
-  a:focus-visible, button:focus-visible, input:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
   main { padding: 40px 0 72px; }
   h1 { font-size: clamp(26px, 6vw, 38px); line-height: 1.25; margin: 0 0 8px; letter-spacing: -0.03em; }
   h2 { font-size: 20px; margin: 0 0 12px; letter-spacing: -0.02em; }
@@ -36,8 +36,11 @@
   .card { background: var(--card); border: 1px solid var(--line); border-radius: 24px; padding: 24px; box-shadow: var(--shadow); margin-bottom: 20px; }
   .stock-row { border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px; margin-bottom: 12px; background: var(--bg-soft); }
   .row-title { margin: 0 0 8px; font-size: 13px; font-weight: 800; color: var(--muted); }
-  .grid5 { display: grid; gap: 10px; grid-template-columns: repeat(2, 1fr); }
-  @media (min-width: 760px) { .grid5 { grid-template-columns: 1.2fr 1fr 1fr 1fr 1fr; } }
+  .grid-row { display: grid; gap: 10px; grid-template-columns: repeat(2, 1fr); }
+  .grid-row .field.wide { grid-column: 1 / -1; }
+  @media (min-width: 760px) { .grid-row { grid-template-columns: 1.3fr 1fr 1fr; } .grid-row .field.wide { grid-column: auto; } }
+  .assump-group { margin: 0 0 14px; }
+  .assump-title { margin: 0 0 6px; font-size: 14px; font-weight: 800; }
   .grid3 { display: grid; gap: 10px; grid-template-columns: repeat(3, 1fr); }
   .field label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px; }
   .field input { width: 100%; padding: 11px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--card); color: var(--text); font-family: inherit; font-size: 16px; }
@@ -46,6 +49,7 @@
   .example-pick select { padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); color: var(--text); font-family: inherit; font-size: 14px; min-height: 40px; }
   .example-note { flex-basis: 100%; margin: 0; font-size: 12px; color: var(--muted); }
   .example-missing { margin: 0 0 12px; padding: 10px 14px; border-radius: 12px; background: var(--bg-soft); color: var(--muted); font-size: 13px; font-weight: 700; }
+  .defaults-note { margin: 0 0 14px; padding: 12px 16px; border-radius: 14px; background: var(--accent-soft); font-size: 14px; }
   .field input.invalid { border-color: var(--warn); border-width: 2px; }
   .err { color: var(--warn); font-size: 12px; font-weight: 700; margin: 4px 0 0; }
   .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 56px; padding: 0 36px; border: 0; border-radius: 16px; background: var(--accent); color: var(--accent-text); font-size: 18px; font-weight: 800; cursor: pointer; font-family: inherit; }
@@ -76,24 +80,37 @@
 </div></div>
 
 <main><div class="wrap">
-  <h1>가정은 한 번만 넣어요</h1>
-  <p class="lead">종목 값과 목표 PER을 넣으면 종목마다 단기·중기·장기 적정가 범위가 나와요. 값은 직접 만든 예시여도 괜찮아요.</p>
+  <h1>종목과 현재가만 넣어요</h1>
+  <p class="lead">종목명·현재가·최근 EPS만 넣으면 단기·중기·장기 적정가 범위가 나와요. 목표 PER과 이익 증감률은 미리 채워 두었고, 고쳐 쓸 수 있어요. 값은 직접 만든 예시여도 괜찮아요.</p>
 
   <form id="calcForm" novalidate>
     <div class="card">
       <h2>1. 종목 (최대 5줄, 쓰지 않는 줄은 비워 두세요)</h2>
       <p id="exampleMsg" class="example-missing" hidden></p>
       <div id="rows"></div>
+      <p class="small" style="margin:8px 0 0">최근 EPS는 증권사 앱 등의 종목 화면에서 확인해 직접 넣어 주세요. 이 도구가 대신 찾아 주지 않아요.</p>
     </div>
 
     <div class="card">
-      <h2>2. 공통 목표 PER (배)</h2>
-      <div class="grid3">
-        <div class="field"><label for="per-low">비관</label><input id="per-low" type="text" inputmode="decimal" autocomplete="off" placeholder="예: 8" aria-describedby="err-per-low"><p class="err" id="err-per-low" hidden></p></div>
-        <div class="field"><label for="per-base">기준</label><input id="per-base" type="text" inputmode="decimal" autocomplete="off" placeholder="예: 10" aria-describedby="err-per-base"><p class="err" id="err-per-base" hidden></p></div>
-        <div class="field"><label for="per-high">낙관</label><input id="per-high" type="text" inputmode="decimal" autocomplete="off" placeholder="예: 12" aria-describedby="err-per-high"><p class="err" id="err-per-high" hidden></p></div>
+      <h2>2. 공통 가정 (미리 채워져 있어요)</h2>
+      <p id="defaultsNote" class="defaults-note"></p>
+      <div class="assump-group">
+        <p class="assump-title">목표 PER (배)</p>
+        <div class="grid3">
+          <div class="field"><label for="per-low">비관</label><input id="per-low" type="text" inputmode="decimal" autocomplete="off" aria-describedby="err-per-low"><p class="err" id="err-per-low" hidden></p></div>
+          <div class="field"><label for="per-base">기준</label><input id="per-base" type="text" inputmode="decimal" autocomplete="off" aria-describedby="err-per-base"><p class="err" id="err-per-base" hidden></p></div>
+          <div class="field"><label for="per-high">낙관</label><input id="per-high" type="text" inputmode="decimal" autocomplete="off" aria-describedby="err-per-high"><p class="err" id="err-per-high" hidden></p></div>
+        </div>
       </div>
-      <p class="small" style="margin:12px 0 0">목표 PER은 내가 정하는 가정이에요. 이 도구가 대신 정해 주지 않아요.</p>
+      <div class="assump-group">
+        <p class="assump-title">이익 증감률 (%) — 최근 EPS 대비</p>
+        <div class="grid3">
+          <div class="field"><label for="g-0">단기</label><input id="g-0" type="text" inputmode="decimal" autocomplete="off" aria-describedby="err-g-0"><p class="err" id="err-g-0" hidden></p></div>
+          <div class="field"><label for="g-1">중기</label><input id="g-1" type="text" inputmode="decimal" autocomplete="off" aria-describedby="err-g-1"><p class="err" id="err-g-1" hidden></p></div>
+          <div class="field"><label for="g-2">장기</label><input id="g-2" type="text" inputmode="decimal" autocomplete="off" aria-describedby="err-g-2"><p class="err" id="err-g-2" hidden></p></div>
+        </div>
+      </div>
+      <p class="small" style="margin:0">예상 EPS = 최근 EPS × (1 + 증감률), 적정가 = 예상 EPS × 목표 PER 이에요.</p>
     </div>
 
     <button id="calcBtn" class="btn" type="submit">계산하기</button>

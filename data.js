@@ -234,12 +234,12 @@ window.KOR_RATES_MONTHLY = {
 
 
 // ───── 예시 종목 (가상) ─────
-// 직접 만든 가상 값입니다. 실제 종목·실제 시세·실제 재무가 아닙니다. (docs/requirements.md R-05·R-06)
-// price: 현재가(원), eps: 예상 EPS [단기, 중기, 장기](원)
+// 직접 만든 가상 값입니다. 실제 종목·실제 시세·실제 재무가 아닙니다. (docs/requirements.md v2 R-05·R-06)
+// price: 현재가(원), eps: 최근 EPS(원, 1개)
 window.EXAMPLE_STOCKS = [
-  { "name": "예시A", "price": 60000, "eps": [4000, 4500, 5000] },
-  { "name": "예시B", "price": 30000, "eps": [2000, 2200, 2500] },
-  { "name": "예시C", "price": 85000, "eps": [6000, 6400, 7000] },
-  { "name": "예시D", "price": 12000, "eps": [900, 1000, 1100] },
-  { "name": "예시E", "price": 45000, "eps": [3000, 3200, 3400] }
+  { "name": "예시A", "price": 60000, "eps": 4500 },
+  { "name": "예시B", "price": 30000, "eps": 2200 },
+  { "name": "예시C", "price": 85000, "eps": 6400 },
+  { "name": "예시D", "price": 12000, "eps": 1000 },
+  { "name": "예시E", "price": 45000, "eps": 3200 }
 ];
