@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>단위 테스트 (UT)</title>
+<style>
+  body { font-family: system-ui, "Malgun Gothic", sans-serif; margin: 24px; line-height: 1.5; color: #141a21; }
+  h1 { font-size: 22px; }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; }
+  th, td { border: 1px solid #dfe4ea; padding: 8px 10px; text-align: left; vertical-align: top; }
+  th { background: #f3f5f7; }
+  .pass { color: #0a7a3d; font-weight: 800; }
+  .fail { color: #b42318; font-weight: 800; }
+  pre { margin: 0; white-space: pre-wrap; word-break: break-all; font-size: 12px; }
+  #summary { font-size: 18px; font-weight: 800; margin: 12px 0; }
+</style>
+</head>
+<body>
+<h1>단위 테스트 (UT) — app.js 함수에 값을 넣어 본다</h1>
+<p>기대 결과는 <code>docs/requirements.md</code>·<code>docs/qa_scenarios.md</code>에서 가져와 이 파일에 적었고, <b>화면에 보이는 형식(쉼표·기호)과 문장까지 똑같은지</b> 비교합니다. 통과 여부는 「실제」와 「기대」를 눈으로 대조하세요.</p>
+<div id="summary"></div>
+<table>
+  <thead><tr><th>테스트 ID</th><th>R-ID</th><th>무엇을 확인하나</th><th>기대</th><th>실제</th><th>판정</th></tr></thead>
+  <tbody id="out"></tbody>
+</table>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+<script>
+  var A = FairApp;
+  var PER = { low: 8, base: 10, high: 12 };
+
+  // 기대값은 requirements.md에서 가져온 문자열이다(app.js로 계산하지 않는다).
+  var EXPECT_A = [
+    { stock: "예시A", period: "단기", range: "32,000 ~ 48,000", base: "40,000", gap: "-33.3%" },
+    { stock: "예시A", period: "중기", range: "36,000 ~ 54,000", base: "45,000", gap: "-25.0%" },
+    { stock: "예시A", period: "장기", range: "40,000 ~ 60,000", base: "50,000", gap: "-16.7%" }
+  ];
+  var EXPECT_B = [
+    { stock: "예시B", period: "단기", range: "16,000 ~ 24,000", base: "20,000", gap: "-33.3%" },
+    { stock: "예시B", period: "중기", range: "17,600 ~ 26,400", base: "22,000", gap: "-26.7%" },
+    { stock: "예시B", period: "장기", range: "20,000 ~ 30,000", base: "25,000", gap: "-16.7%" }
+  ];
+  var EXPECT_RATE = { month: "2026-08", long: 4.286, short: 2.97 };
+  var EXPECT_RATE_LINE = "참고: 한국 장기금리(10년 국채) 4.286 %, 3개월 금리 2.97 % (2026-08, 출처: OECD Data Explorer, CC BY 4.0). 종목의 적정 배수를 알려 주는 값이 아닙니다.";
+  var EXPECT_DISCLAIMER = "주가 예측이 아니라 입력한 가정에 따른 시나리오이며, 종목 추천이나 매수·매도 권유가 아닙니다.";
+
+  var PER_OK = { "per-low": "8", "per-base": "10", "per-high": "12" };
+  function emptyRows() {
+    var rows = [];
+    for (var i = 0; i < 5; i++) rows.push({ name: "", price: "", eps: ["", "", ""] });
+    return rows;
+  }
+
+  // 예시A 한 줄(현재가 60,000 · EPS 4,000/4,500/5,000)에서 필요한 칸만 바꿔 넣은 5줄 입력
+  function rowA(over) {
+    var r = emptyRows();
+    var base = { price: "60,000", eps0: "4,000", eps1: "4,500", eps2: "5,000" };
+    for (var k in over) base[k] = over[k];
+    r[0] = { name: "예시A", price: base.price, eps: [base.eps0, base.eps1, base.eps2] };
+    return r;
+  }
+
+  var tests = [
+    { id: "UT-01a", r: "R-01", what: "예시A 계산 (현재가 60000, EPS 4000/4500/5000, PER 8/10/12)",
+      expected: EXPECT_A,
+      run: function () { return A.buildDisplayRows(A.calcAll([{ name: "예시A", price: 60000, eps: [4000, 4500, 5000] }], PER)); } },
+    { id: "UT-01b", r: "R-01", what: "예시B 계산 (현재가 30000, EPS 2000/2200/2500, PER 8/10/12)",
+      expected: EXPECT_B,
+      run: function () { return A.buildDisplayRows(A.calcAll([{ name: "예시B", price: 30000, eps: [2000, 2200, 2500] }], PER)); } },
+    { id: "UT-01c", r: "R-01", what: "금리 참고: data.js 마지막 행",
+      expected: EXPECT_RATE,
+      run: function () { return A.getRateReference(window.KOR_RATES_MONTHLY); } },
+    { id: "UT-01d", r: "R-01", what: "금리 참고 줄 문장(화면에 나오는 문장 그대로)",
+      expected: EXPECT_RATE_LINE,
+      run: function () { return A.formatRateLine(A.getRateReference(window.KOR_RATES_MONTHLY)); } },
+    { id: "UT-01e", r: "R-01", what: "면책 문구(화면에 나오는 문장 그대로)",
+      expected: EXPECT_DISCLAIMER,
+      run: function () { return A.DISCLAIMER; } },
+
+    // ── R-02 빈값 ── 기대 문장은 requirements.md의 「빈값·오류 안내」에서 가져왔다.
+    { id: "UT-02a", r: "R-02", what: "종목 줄 5개가 모두 비어 있음 (PER 8/10/12)",
+      expected: { ok: false, top: "종목 정보를 한 줄 이상 입력해 주세요.", errors: [] },
+      run: function () { return A.validateInputs(emptyRows(), { "per-low": "8", "per-base": "10", "per-high": "12" }); } },
+    { id: "UT-02b", r: "R-02", what: "예시A에서 현재가만 빔",
+      expected: { ok: false, top: "빈 칸이 있어 계산하지 않았습니다. 표시된 칸을 채워 주세요.",
+        errors: [{ id: "f-0-price", message: "현재가를 입력해 주세요." }] },
+      run: function () { var r = emptyRows(); r[0] = { name: "예시A", price: "", eps: ["4,000", "4,500", "5,000"] }; return A.validateInputs(r, PER_OK); } },
+    { id: "UT-02c", r: "R-02", what: "예시A에서 장기 EPS만 빔",
+      expected: { ok: false, top: "빈 칸이 있어 계산하지 않았습니다. 표시된 칸을 채워 주세요.",
+        errors: [{ id: "f-0-eps2", message: "장기 예상 EPS를 입력해 주세요." }] },
+      run: function () { var r = emptyRows(); r[0] = { name: "예시A", price: "60,000", eps: ["4,000", "4,500", ""] }; return A.validateInputs(r, PER_OK); } },
+    { id: "UT-02d", r: "R-02", what: "기준 PER만 빔 (PER 비관 8 · 기준 빈 칸 · 낙관 12)",
+      expected: { ok: false, top: "빈 칸이 있어 계산하지 않았습니다. 표시된 칸을 채워 주세요.",
+        errors: [{ id: "per-base", message: "기준 목표 PER을 입력해 주세요." }] },
+      run: function () { var r = emptyRows(); r[0] = { name: "예시A", price: "60,000", eps: ["4,000", "4,500", "5,000"] }; return A.validateInputs(r, { "per-low": "8", "per-base": "", "per-high": "12" }); } },
+    { id: "UT-02e", r: "R-02", what: "모든 칸이 채워지면 빈값 오류 없음 (R-01 입력)",
+      expected: { ok: true, top: "", errors: [] },
+      run: function () {
+        var r = emptyRows();
+        r[0] = { name: "예시A", price: "60,000", eps: ["4,000", "4,500", "5,000"] };
+        r[1] = { name: "예시B", price: "30,000", eps: ["2,000", "2,200", "2,500"] };
+        return A.validateInputs(r, PER_OK);
+      } },
+
+    // ── R-03 오류 ── 기대 문장은 requirements.md의 「빈값·오류 안내」에서 가져왔다.
+    { id: "UT-03a", r: "R-03", what: "현재가에 문자 「abc」",
+      expected: { ok: false, top: "입력값을 확인해 주세요. 표시된 칸을 고친 뒤 다시 계산해 주세요.",
+        errors: [{ id: "f-0-price", message: "숫자만 입력해 주세요. (예: 60000)" }] },
+      run: function () { return A.validateInputs(rowA({ price: "abc" }), PER_OK); } },
+    { id: "UT-03b1", r: "R-03", what: "현재가 0",
+      expected: { ok: false, top: "입력값을 확인해 주세요. 표시된 칸을 고친 뒤 다시 계산해 주세요.",
+        errors: [{ id: "f-0-price", message: "현재가는 0보다 큰 숫자여야 합니다." }] },
+      run: function () { return A.validateInputs(rowA({ price: "0" }), PER_OK); } },
+    { id: "UT-03b2", r: "R-03", what: "단기 EPS -100",
+      expected: { ok: false, top: "입력값을 확인해 주세요. 표시된 칸을 고친 뒤 다시 계산해 주세요.",
+        errors: [{ id: "f-0-eps0", message: "예상 EPS는 0보다 큰 숫자여야 합니다." }] },
+      run: function () { return A.validateInputs(rowA({ eps0: "-100" }), PER_OK); } },
+    { id: "UT-03b3", r: "R-03", what: "기준 PER 0",
+      expected: { ok: false, top: "입력값을 확인해 주세요. 표시된 칸을 고친 뒤 다시 계산해 주세요.",
+        errors: [{ id: "per-base", message: "목표 PER은 0보다 큰 숫자여야 합니다." }] },
+      run: function () { return A.validateInputs(rowA({}), { "per-low": "8", "per-base": "0", "per-high": "12" }); } },
+    { id: "UT-03c", r: "R-03", what: "PER 순서 (비관 12 · 기준 10 · 낙관 8)",
+      expected: { ok: false, top: "입력값을 확인해 주세요. 표시된 칸을 고친 뒤 다시 계산해 주세요.",
+        errors: [{ id: "per-high", message: "목표 PER은 비관 ≤ 기준 ≤ 낙관 순서로 입력해 주세요." }] },
+      run: function () { return A.validateInputs(rowA({}), { "per-low": "12", "per-base": "10", "per-high": "8" }); } },
+    { id: "UT-03d", r: "R-03", what: "쉼표 숫자 「60,000」은 60000으로 읽는다",
+      expected: 60000,
+      run: function () { return A.parseNumber("60,000"); } },
+    { id: "UT-03e", r: "R-03", what: "쉼표 숫자를 넣어도 오류 없음 (현재가 「60,000」)",
+      expected: { ok: true, top: "", errors: [] },
+      run: function () { return A.validateInputs(rowA({}), PER_OK); } },
+    { id: "UT-03f", r: "R-03", what: "빈 칸과 잘못된 값이 함께 있을 때 (현재가 「abc」 + 장기 EPS 빔) — 상단은 빈 칸 문구 우선, 칸 아래는 각각",
+      expected: { ok: false, top: "빈 칸이 있어 계산하지 않았습니다. 표시된 칸을 채워 주세요.",
+        errors: [{ id: "f-0-price", message: "숫자만 입력해 주세요. (예: 60000)" }, { id: "f-0-eps2", message: "장기 예상 EPS를 입력해 주세요." }] },
+      run: function () { return A.validateInputs(rowA({ price: "abc", eps2: "" }), PER_OK); } },
+
+    // ── R-04 데이터 없음 ──
+    { id: "UT-04a", r: "R-04", what: "getRateReference(undefined) — data.js를 못 불러온 경우",
+      expected: null,
+      run: function () { return A.getRateReference(undefined); } },
+    { id: "UT-04b", r: "R-04", what: "getRateReference({rows: []}) — rows가 비어 있는 경우",
+      expected: null,
+      run: function () { return A.getRateReference({ rows: [] }); } },
+    { id: "UT-04c", r: "R-04", what: "금리 자료가 없을 때 화면에 나오는 문장 그대로",
+      expected: "금리 자료를 불러오지 못했습니다. 계산은 그대로 사용할 수 있습니다.",
+      run: function () { return A.formatRateLine(A.getRateReference(undefined)); } },
+    { id: "UT-04d", r: "R-04", what: "금리 자료가 없어도 계산 결과는 R-01과 같다 (예시A)",
+      expected: EXPECT_A,
+      run: function () { return A.buildDisplayRows(A.calcAll([{ name: "예시A", price: 60000, eps: [4000, 4500, 5000] }], PER)); } },
+
+    // ── R-05 예시 종목 선택 ── (가상 종목. 기대값은 requirements.md의 R-05에서 가져왔다)
+    { id: "UT-05a", r: "R-05", what: "applyExample(\"예시A\") — data.js의 가상 종목을 이름으로 찾기",
+      expected: { name: "예시A", price: 60000, eps: [4000, 4500, 5000] },
+      run: function () { return A.applyExample("예시A"); } },
+    { id: "UT-05b", r: "R-05", what: "예시C를 고른 값으로 계산 (PER 8/10/12)",
+      expected: [
+        { stock: "예시C", period: "단기", range: "48,000 ~ 72,000", base: "60,000", gap: "-29.4%" },
+        { stock: "예시C", period: "중기", range: "51,200 ~ 76,800", base: "64,000", gap: "-24.7%" },
+        { stock: "예시C", period: "장기", range: "56,000 ~ 84,000", base: "70,000", gap: "-17.6%" }
+      ],
+      run: function () { return A.buildDisplayRows(A.calcAll([A.applyExample("예시C")], PER)); } },
+    { id: "UT-05c1", r: "R-05", what: "applyExample(\"직접 입력\") — 칸 값을 바꾸지 않는다",
+      expected: null,
+      run: function () { return A.applyExample("직접 입력"); } },
+    { id: "UT-05c2", r: "R-05", what: "applyExample(\"없는종목\") — 목록에 없는 이름",
+      expected: null,
+      run: function () { return A.applyExample("없는종목"); } },
+    { id: "UT-05d", r: "R-05", what: "예시 종목 5개의 이름 (예시A~E, 가상)",
+      expected: ["예시A", "예시B", "예시C", "예시D", "예시E"],
+      run: function () { return A.getExampleList(window.EXAMPLE_STOCKS).map(function (s) { return s.name; }); } },
+
+    // ── R-06 예시 목록 없음 ──
+    { id: "UT-06a", r: "R-06", what: "getExampleList(undefined) — 예시 데이터가 없는 경우",
+      expected: [],
+      run: function () { return A.getExampleList(undefined); } },
+    { id: "UT-06b", r: "R-06", what: "getExampleList([]) — 예시 목록이 비어 있는 경우",
+      expected: [],
+      run: function () { return A.getExampleList([]); } },
+    { id: "UT-06c", r: "R-06", what: "예시 목록이 없을 때 화면에 나오는 문장 그대로 (undefined와 빈 배열 모두)",
+      expected: ["예시 종목을 불러오지 못했습니다. 값을 직접 입력해 주세요.", "예시 종목을 불러오지 못했습니다. 값을 직접 입력해 주세요."],
+      run: function () { return [A.getExampleMessage(undefined), A.getExampleMessage([])]; } },
+    { id: "UT-06d", r: "R-06", what: "예시 목록이 있으면 안내 문구는 빈 문자열 (지금 data.js)",
+      expected: "",
+      run: function () { return A.getExampleMessage(window.EXAMPLE_STOCKS); } }
+  ];
+
+  var tbody = document.getElementById("out");
+  var pass = 0;
+  tests.forEach(function (t) {
+    var actual, error = null;
+    try { actual = t.run(); } catch (e) { error = String(e); actual = "오류: " + error; }
+    var ok = !error && JSON.stringify(actual) === JSON.stringify(t.expected);
+    if (ok) pass++;
+    var tr = document.createElement("tr");
+    function cell(html) { var td = document.createElement("td"); td.innerHTML = html; tr.appendChild(td); }
+    function esc(v) { return String(v).replace(/&/g, "&amp;").replace(/</g, "&lt;"); }
+    function show(v) { return "<pre>" + esc(typeof v === "string" ? v : JSON.stringify(v, null, 1)) + "</pre>"; }
+    cell(t.id); cell(t.r); cell(esc(t.what)); cell(show(t.expected)); cell(show(actual));
+    cell(ok ? '<span class="pass">통과</span>' : '<span class="fail">실패</span>');
+    tbody.appendChild(tr);
+  });
+  document.getElementById("summary").textContent = "통과 " + pass + " / 전체 " + tests.length + (pass === tests.length ? "" : " — 실패가 있어요");
+</script>
+</body>
+</html>
