@@ -322,18 +322,18 @@
 <section id="s5">
   <div class="wrap">
     <p class="eyebrow">테스트 결과</p>
-    <h2>제작 PC에서는 확인했고<br>배포 주소 확인은 아직이에요</h2>
-    <p class="lead">아래는 제작 PC에서 실제로 돌려 본 결과예요. 배포 주소에서 다시 눌러 본 결과는 아직 없어서 「미확인」으로 남겨요.</p>
+    <h2>제작 PC에서는 모두 확인했고<br>배포 주소는 일부만 확인했어요</h2>
+    <p class="lead">아래는 제작 PC와 배포 주소에서 실제로 눌러 본 결과예요. 배포 주소에서 확인하지 못한 항목은 「미확인」으로 남겨요.</p>
     <div class="row three" style="margin-top:32px">
-      <div class="card"><h3>R-01 정상</h3><p class="small">확인한 것: 예시A·B 표 6행(최근 EPS 기준), 금리 참고 줄</p><p class="result-line">로컬 통과 · 단위 6/6 · 통합 IT-01</p><p class="status">배포 주소: 미확인</p></div>
-      <div class="card"><h3>R-02 빈값</h3><p class="small">확인한 것: 빈 칸 안내(종목·PER·증감률), 이전 결과 표 삭제</p><p class="result-line">로컬 통과 · 단위 6/6 · 통합 IT-02</p><p class="status">배포 주소: 미확인</p></div>
-      <div class="card"><h3>R-03 오류</h3><p class="small">확인한 것: 문자·0 이하·PER 순서·증감률 범위 안내, 쉼표·음수 증감률은 정상</p><p class="result-line">로컬 통과 · 단위 11/11 · 통합 IT-03</p><p class="status">배포 주소: 미확인</p></div>
+      <div class="card"><h3>R-01 정상</h3><p class="small">확인한 것: 예시A·B 표 6행(최근 EPS 기준), 금리 참고 줄</p><p class="result-line">로컬 통과 · 단위 6/6 · 통합 IT-01</p><p class="status">배포 주소: 확인</p></div>
+      <div class="card"><h3>R-02 빈값</h3><p class="small">확인한 것: 빈 칸 안내(종목·PER·증감률), 이전 결과 표 삭제</p><p class="result-line">로컬 통과 · 단위 6/6 · 통합 IT-02</p><p class="status">배포 주소: 확인</p></div>
+      <div class="card"><h3>R-03 오류</h3><p class="small">확인한 것: 문자·0 이하·PER 순서·증감률 범위 안내, 쉼표·음수 증감률은 정상</p><p class="result-line">로컬 통과 · 단위 11/11 · 통합 IT-03</p><p class="status">배포 주소: 일부 확인 (문자·증감률 -100)</p></div>
       <div class="card"><h3>R-04 데이터 없음</h3><p class="small">확인한 것: 금리 자료가 없어도 표는 같고 금리 줄만 안내 문구</p><p class="result-line">로컬 통과 · 단위 4/4 · 통합 IT-04</p><p class="status">배포 주소: 미확인</p></div>
-      <div class="card"><h3>R-05 예시 종목 선택</h3><p class="small">확인한 것: 예시A·C 선택 시 칸 채움, 값 수정·되돌리기</p><p class="result-line">로컬 통과 · 단위 5/5 · 통합 IT-05</p><p class="status">배포 주소: 미확인</p></div>
+      <div class="card"><h3>R-05 예시 종목 선택</h3><p class="small">확인한 것: 예시A·C 선택 시 칸 채움, 값 수정·되돌리기</p><p class="result-line">로컬 통과 · 단위 5/5 · 통합 IT-05</p><p class="status">배포 주소: 확인</p></div>
       <div class="card"><h3>R-06 예시 목록 없음</h3><p class="small">확인한 것: 선택 상자 숨김, 안내 문구, 직접 입력은 그대로</p><p class="result-line">로컬 통과 · 단위 2/2 · 통합 IT-06</p><p class="status">배포 주소: 미확인</p></div>
-      <div class="card"><h3>R-07 기본 시나리오</h3><p class="small">확인한 것: 처음 열면 PER·증감률이 채워짐, 안내 문구, 값을 고치면 결과 반영</p><p class="result-line">로컬 통과 · 단위 3/3 · 통합 IT-07</p><p class="status">배포 주소: 미확인</p></div>
+      <div class="card"><h3>R-07 기본 시나리오</h3><p class="small">확인한 것: 처음 열면 PER·증감률이 채워짐, 안내 문구, 값을 고치면 결과 반영</p><p class="result-line">로컬 통과 · 단위 3/3 · 통합 IT-07</p><p class="status">배포 주소: 확인</p></div>
     </div>
-    <p class="small" style="margin-top:14px">단위 테스트 37/37 (제작 PC, 입력 단순화 버전). 실행·판정 기록은 docs/test_log.md에 있어요. 고객 인터뷰나 실제 사용자 검증은 아직 하지 않았어요.</p>
+    <p class="small" style="margin-top:14px">단위 테스트 37/37 (제작 PC, 입력 단순화 버전). 실행·판정 기록은 docs/test_log.md, 배포 주소 확인 기록은 docs/deploy_check.md에 있어요. R-04·R-06은 배포 환경에서 재현이 어려워 배포 주소에서는 확인하지 않았어요. 고객 인터뷰나 실제 사용자 검증은 아직 하지 않았어요.</p>
   </div>
 </section>
 
